@@ -19,8 +19,6 @@ import static org.apache.commons.math3.complex.Complex.ZERO;
 
 public class FunctionCompressor {
 
-    private static final int RAND_MAX = 1000;
-
     private XYSeriesCollection series = new XYSeriesCollection();
 
     public XYDataset compress(UIData data) {
@@ -39,13 +37,13 @@ public class FunctionCompressor {
     /**
      * e^(2*pi*i*jk/n) kj from 0 to N-1
      */
-    private Complex[][] initialize(int n, boolean positive) {
+    private Complex[][] initialize(int n, boolean reverse) {
         Complex[][] e = new Complex[n][n];
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 double imaginary = (2 * Math.PI * i * j) / n;
-                e[i][j] = new Complex(0, positive ? imaginary : -1 * imaginary).exp();
+                e[i][j] = new Complex(0, reverse ? imaginary : -1 * imaginary).exp();
             }
         }
 
@@ -53,7 +51,7 @@ public class FunctionCompressor {
     }
 
     private Complex[] findX(FunctionType type, Complex[][] eWave, int n) {
-        Complex[] f = type.equals(FunctionType.RAND) ? findRandomFunctionValues(n)
+        Complex[] f = FunctionType.RAND.equals(type) ? findRandomFunctionValues(n)
                 : findFunctionValues(type.getUserFunction(), n);
 
         series.addSeries(generateDataSet("f", f));
@@ -61,7 +59,7 @@ public class FunctionCompressor {
         Complex[] x = initializeZeroComplexArray(n);
         Complex[][] eWave1 = initialize(n, false);
 
-        //Matrix multiplying and calculating N
+        //Finding scalar N
         Complex N = ZERO;
         for (int j = 0; j < n; j++) {
             N = N.add(eWave[1][j].multiply(eWave1[j][1]));
@@ -83,17 +81,7 @@ public class FunctionCompressor {
         Complex[] f = new Complex[n];
 
         for (int i = 0; i < n; i++) {
-            Complex complex = new Complex(random.nextInt(), random.nextInt());
-            complex.divide(RAND_MAX);
-            complex.multiply(2);
-            complex.add(-1);
-            double rand = random.nextDouble();
-            rand /= RAND_MAX;
-            rand *= 2;
-            rand -= 1;
-            complex.add(new Complex(0, rand));
-
-            f[i] = complex;
+            f[i] = ComplexUtils.getRandomComplexNumber(random);
         }
 
         return f;
