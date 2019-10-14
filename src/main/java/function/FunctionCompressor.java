@@ -24,11 +24,11 @@ public class FunctionCompressor {
     public XYDataset compress(UIData data) {
         int n = data.getN();
 
-        Complex[][] eWave = initialize(n, true);
+        Complex[][] e = initialize(n, true);
 
-        Complex[] x = findX(data.getFn(), eWave, n);
+        Complex[] x = findX(data.getFn(), e, n);
 
-        Complex[] fWave = findFWave(data, n, eWave, x);
+        Complex[] fWave = findFWave(data, n, e, x);
 
         series.addSeries(generateDataSet("f wave", fWave));
         return series;
@@ -50,25 +50,25 @@ public class FunctionCompressor {
         return e;
     }
 
-    private Complex[] findX(FunctionType type, Complex[][] eWave, int n) {
+    private Complex[] findX(FunctionType type, Complex[][] e, int n) {
         Complex[] f = FunctionType.RAND.equals(type) ? findRandomFunctionValues(n)
                 : findFunctionValues(type.getUserFunction(), n);
 
         series.addSeries(generateDataSet("f", f));
 
         Complex[] x = initializeZeroComplexArray(n);
-        Complex[][] eWave1 = initialize(n, false);
+        Complex[][] eWave = initialize(n, false);
 
         //Finding scalar N
         Complex N = ZERO;
         for (int j = 0; j < n; j++) {
-            N = N.add(eWave[1][j].multiply(eWave1[j][1]));
+            N = N.add(e[1][j].multiply(eWave[j][1]));
         }
 
-        //x = (eWave1 * f) / N
+        //x = (eWave * f) / N
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                x[i] = x[i].add(eWave1[i][j].multiply(f[j].getImaginary()));
+                x[i] = x[i].add(eWave[i][j].multiply(f[j].getImaginary()));
             }
             x[i] = x[i].divide(N);
         }
